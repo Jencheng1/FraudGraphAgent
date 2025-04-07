@@ -1,0 +1,73 @@
+{
+  "graph": {
+    "nodes": [
+      {
+        "id": "account-1",
+        "label": "user123",
+        "type": "account",
+        "properties": {
+          "email": "user123@example.com",
+          "loginTime": "2025-04-07T10:15:30Z",
+          "isFraudulent": true
+        }
+      },
+      {
+        "id": "account-2",
+        "label": "johndoe",
+        "type": "account",
+        "properties": {
+          "email": "john.doe@example.com",
+          "loginTime": "2025-04-07T10:16:45Z",
+          "isFraudulent": true
+        }
+      },
+      {
+        "id": "account-3",
+        "label": "alice_smith",
+        "type": "account",
+        "properties": {
+          "email": "alice.smith@example.com",
+          "loginTime": "2025-04-07T10:17:20Z",
+          "isFraudulent": true
+        }
+      },
+      {
+        "id": "account-4",
+        "label": "bob_jones",
+        "type": "account",
+        "properties": {
+          "email": "bob.jones@example.com",
+          "loginTime": "2025-04-07T11:30:15Z",
+          "isFraudulent": false
+        }
+      },
+      {
+        "id": "ip-1",
+        "label": "192.168.1.100",
+        "type": "ip",
+        "properties": {
+          "count": 3,
+          "isSuspicious": true
+        }
+      },
+      {
+        "id": "ip-2",
+        "label": "192.168.1.101",
+        "type": "ip",
+        "properties": {
+          "count": 1,
+          "isSuspicious": false
+        }
+      }
+    ],
+    "links": [
+      { "source": "account-1", "target": "ip-1", "type": "CONNECTS_FROM" },
+      { "source": "account-2", "target": "ip-1", "type": "CONNECTS_FROM" },
+      { "source": "account-3", "target": "ip-1", "type": "CONNECTS_FROM" },
+      { "source": "account-4", "target": "ip-2", "type": "CONNECTS_FROM" },
+      { "source": "account-1", "target": "account-2", "type": "RELATED_TO" },
+      { "source": "account-2", "target": "account-3", "type": "RELATED_TO" },
+      { "source": "account-1", "target": "account-3", "type": "RELATED_TO" }
+    ]
+  }
+}

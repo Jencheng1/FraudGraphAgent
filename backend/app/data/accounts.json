@@ -1,0 +1,39 @@
+{
+  "accounts": [
+    {
+      "id": "1",
+      "username": "user123",
+      "email": "user123@example.com",
+      "ip": "192.168.1.100",
+      "loginTime": "2025-04-07T10:15:30Z",
+      "isFraudulent": true,
+      "relatedAccounts": ["2", "3"]
+    },
+    {
+      "id": "2",
+      "username": "johndoe",
+      "email": "john.doe@example.com",
+      "ip": "192.168.1.100",
+      "loginTime": "2025-04-07T10:16:45Z",
+      "isFraudulent": true,
+      "relatedAccounts": ["1", "3"]
+    },
+    {
+      "id": "3",
+      "username": "alice_smith",
+      "email": "alice.smith@example.com",
+      "ip": "192.168.1.100",
+      "loginTime": "2025-04-07T10:17:20Z",
+      "isFraudulent": true,
+      "relatedAccounts": ["1", "2"]
+    },
+    {
+      "id": "4",
+      "username": "bob_jones",
+      "email": "bob.jones@example.com",
+      "ip": "192.168.1.101",
+      "loginTime": "2025-04-07T11:30:15Z",
+      "isFraudulent": false
+    }
+  ]
+}

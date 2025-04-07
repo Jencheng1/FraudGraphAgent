@@ -1,0 +1,10 @@
+{
+  "responses": {
+    "hello": "Hello! I'm your fraud analysis assistant. How can I help you today?",
+    "help": "I can help you analyze potential fraud patterns. Try asking about accounts sharing the same IP address.",
+    "find accounts with same ip": "I found 3 accounts sharing the IP address 192.168.1.100. This appears to be a suspicious pattern.",
+    "show fraud graph": "Displaying the fraud graph visualization for accounts with shared IP addresses.",
+    "analyze": "Based on my analysis, accounts user123, johndoe, and alice_smith are likely fraudulent as they share the same IP address and were created within minutes of each other.",
+    "explain": "These accounts show a classic pattern of fraud where multiple accounts are created from the same IP address in a short time window. This is often indicative of a single actor creating multiple accounts for malicious purposes."
+  }
+}
