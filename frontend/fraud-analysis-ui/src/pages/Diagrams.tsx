@@ -45,9 +45,11 @@ const diagrams: Diagram[] = [
       { type: 'rect', x: 250, y: 50, width: 120, height: 60, fill: '#44aa44', label: 'FastAPI Backend' },
       { type: 'rect', x: 450, y: 50, width: 120, height: 60, fill: '#ff8800', label: 'RASA NLU' },
       { type: 'rect', x: 250, y: 200, width: 120, height: 60, fill: '#ff4444', label: 'Graph Database' },
+      { type: 'rect', x: 450, y: 200, width: 120, height: 60, fill: '#8844ff', label: 'GraphRAG' },
       { type: 'arrow', start: { x: 170, y: 80 }, end: { x: 250, y: 80 }, label: 'API Calls' },
       { type: 'arrow', start: { x: 370, y: 80 }, end: { x: 450, y: 80 }, label: 'NLU Queries' },
-      { type: 'arrow', start: { x: 310, y: 110 }, end: { x: 310, y: 200 }, label: 'Data Access' }
+      { type: 'arrow', start: { x: 310, y: 110 }, end: { x: 310, y: 200 }, label: 'Data Access' },
+      { type: 'arrow', start: { x: 370, y: 230 }, end: { x: 450, y: 230 }, label: 'Graph Embeddings' }
     ]
   },
   {
@@ -58,22 +60,24 @@ const diagrams: Diagram[] = [
       { type: 'circle', x: 300, y: 100, radius: 40, fill: '#44aa44', label: 'NLU Processing' },
       { type: 'circle', x: 450, y: 100, radius: 40, fill: '#ff8800', label: 'Graph Analysis' },
       { type: 'circle', x: 300, y: 250, radius: 40, fill: '#ff4444', label: 'Results' },
+      { type: 'circle', x: 450, y: 250, radius: 40, fill: '#8844ff', label: 'GraphRAG' },
       { type: 'arrow', start: { x: 190, y: 100 }, end: { x: 260, y: 100 } },
       { type: 'arrow', start: { x: 340, y: 100 }, end: { x: 410, y: 100 } },
-      { type: 'arrow', start: { x: 450, y: 140 }, end: { x: 340, y: 250 } }
+      { type: 'arrow', start: { x: 450, y: 140 }, end: { x: 340, y: 250 } },
+      { type: 'arrow', start: { x: 450, y: 140 }, end: { x: 450, y: 210 }, label: 'Semantic Search' }
     ]
   },
   {
-    title: 'Component Interaction',
-    description: 'How React components communicate and share state',
+    title: 'GraphRAG Architecture',
+    description: 'How GraphRAG enhances fraud detection with semantic graph analysis',
     elements: [
-      { type: 'rect', x: 50, y: 50, width: 150, height: 60, fill: '#4444ff', label: 'Dashboard' },
-      { type: 'rect', x: 50, y: 200, width: 150, height: 60, fill: '#44aa44', label: 'Chat Component' },
-      { type: 'rect', x: 300, y: 200, width: 150, height: 60, fill: '#ff8800', label: 'Graph Visualization' },
-      { type: 'rect', x: 550, y: 200, width: 150, height: 60, fill: '#ff4444', label: 'Fraud Table' },
-      { type: 'arrow', start: { x: 125, y: 110 }, end: { x: 125, y: 200 }, label: 'Props' },
-      { type: 'arrow', start: { x: 125, y: 110 }, end: { x: 375, y: 200 }, label: 'State' },
-      { type: 'arrow', start: { x: 125, y: 110 }, end: { x: 625, y: 200 }, label: 'Events' }
+      { type: 'rect', x: 50, y: 100, width: 150, height: 60, fill: '#8844ff', label: 'Graph Embeddings' },
+      { type: 'rect', x: 250, y: 100, width: 150, height: 60, fill: '#8844ff', label: 'Vector Store' },
+      { type: 'rect', x: 450, y: 100, width: 150, height: 60, fill: '#8844ff', label: 'Semantic Search' },
+      { type: 'rect', x: 250, y: 200, width: 150, height: 60, fill: '#8844ff', label: 'Pattern Matching' },
+      { type: 'arrow', start: { x: 200, y: 130 }, end: { x: 250, y: 130 }, label: 'Store' },
+      { type: 'arrow', start: { x: 400, y: 130 }, end: { x: 450, y: 130 }, label: 'Query' },
+      { type: 'arrow', start: { x: 325, y: 160 }, end: { x: 325, y: 200 }, label: 'Enhance' }
     ]
   },
   {
@@ -83,8 +87,10 @@ const diagrams: Diagram[] = [
       { type: 'circle', x: 300, y: 100, radius: 40, fill: '#4444ff', label: 'Account Node' },
       { type: 'circle', x: 150, y: 250, radius: 40, fill: '#ff4444', label: 'Fraudulent Account' },
       { type: 'circle', x: 450, y: 250, radius: 40, fill: '#44aa44', label: 'IP Address' },
+      { type: 'circle', x: 300, y: 250, radius: 40, fill: '#8844ff', label: 'GraphRAG Pattern' },
       { type: 'arrow', start: { x: 300, y: 140 }, end: { x: 190, y: 250 }, label: 'Related To' },
-      { type: 'arrow', start: { x: 300, y: 140 }, end: { x: 410, y: 250 }, label: 'Connects From' }
+      { type: 'arrow', start: { x: 300, y: 140 }, end: { x: 410, y: 250 }, label: 'Connects From' },
+      { type: 'arrow', start: { x: 300, y: 140 }, end: { x: 300, y: 210 }, label: 'Matches' }
     ]
   }
 ];
