@@ -26,15 +26,15 @@ const Dashboard: React.FC = () => {
         </Toolbar>
       </AppBar>
       
-      <Container maxWidth="xl" sx={{ flexGrow: 1, py: 3, display: 'flex', flexDirection: 'column' }}>
+      <Container maxWidth={false} sx={{ mt: 2, flexGrow: 1 }}>
         <Grid container spacing={3} sx={{ flexGrow: 1 }}>
           {/* Left panel - Chat */}
-          <Grid item xs={12} md={4} sx={{ height: { md: 'calc(100vh - 140px)' } }}>
+          <Grid component="div" item xs={12} md={4} sx={{ height: { md: 'calc(100vh - 140px)' } }}>
             <Chat onQuerySubmit={handleQuerySubmit} />
           </Grid>
           
           {/* Right panel - Visualization and Tables */}
-          <Grid item xs={12} md={8} sx={{ height: { md: 'calc(100vh - 140px)' } }}>
+          <Grid component="div" item xs={12} md={8} sx={{ height: { md: 'calc(100vh - 140px)' } }}>
             <Paper elevation={3} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
               <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <Tabs value={activeTab} onChange={handleTabChange} aria-label="fraud analysis tabs">
