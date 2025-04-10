@@ -56,15 +56,15 @@ const diagrams: Diagram[] = [
     title: 'Data Flow Diagram',
     description: 'How data flows between components during fraud analysis',
     elements: [
-      { type: 'circle', x: 150, y: 100, radius: 40, fill: '#4444ff', label: 'User Input' },
-      { type: 'circle', x: 300, y: 100, radius: 40, fill: '#44aa44', label: 'NLU Processing' },
-      { type: 'circle', x: 450, y: 100, radius: 40, fill: '#ff8800', label: 'Graph Analysis' },
-      { type: 'circle', x: 300, y: 250, radius: 40, fill: '#ff4444', label: 'Results' },
-      { type: 'circle', x: 450, y: 250, radius: 40, fill: '#8844ff', label: 'GraphRAG' },
-      { type: 'arrow', start: { x: 190, y: 100 }, end: { x: 260, y: 100 } },
-      { type: 'arrow', start: { x: 340, y: 100 }, end: { x: 410, y: 100 } },
-      { type: 'arrow', start: { x: 450, y: 140 }, end: { x: 340, y: 250 } },
-      { type: 'arrow', start: { x: 450, y: 140 }, end: { x: 450, y: 210 }, label: 'Semantic Search' }
+      { type: 'circle', x: 150, y: 100, radius: 50, fill: '#4444ff', label: 'User Input' },
+      { type: 'circle', x: 300, y: 100, radius: 50, fill: '#44aa44', label: 'NLU Processing' },
+      { type: 'circle', x: 450, y: 100, radius: 50, fill: '#ff8800', label: 'Graph Analysis' },
+      { type: 'circle', x: 300, y: 250, radius: 50, fill: '#ff4444', label: 'Results' },
+      { type: 'circle', x: 450, y: 250, radius: 50, fill: '#8844ff', label: 'GraphRAG' },
+      { type: 'arrow', start: { x: 200, y: 100 }, end: { x: 250, y: 100 } },
+      { type: 'arrow', start: { x: 350, y: 100 }, end: { x: 400, y: 100 } },
+      { type: 'arrow', start: { x: 450, y: 150 }, end: { x: 340, y: 250 } },
+      { type: 'arrow', start: { x: 450, y: 150 }, end: { x: 450, y: 200 }, label: 'Semantic Search' }
     ]
   },
   {
@@ -84,13 +84,13 @@ const diagrams: Diagram[] = [
     title: 'Graph Data Structure',
     description: 'How fraud patterns are represented in the graph database',
     elements: [
-      { type: 'circle', x: 300, y: 100, radius: 40, fill: '#4444ff', label: 'Account Node' },
-      { type: 'circle', x: 150, y: 250, radius: 40, fill: '#ff4444', label: 'Fraudulent Account' },
-      { type: 'circle', x: 450, y: 250, radius: 40, fill: '#44aa44', label: 'IP Address' },
-      { type: 'circle', x: 300, y: 250, radius: 40, fill: '#8844ff', label: 'GraphRAG Pattern' },
-      { type: 'arrow', start: { x: 300, y: 140 }, end: { x: 190, y: 250 }, label: 'Related To' },
-      { type: 'arrow', start: { x: 300, y: 140 }, end: { x: 410, y: 250 }, label: 'Connects From' },
-      { type: 'arrow', start: { x: 300, y: 140 }, end: { x: 300, y: 210 }, label: 'Matches' }
+      { type: 'circle', x: 300, y: 100, radius: 50, fill: '#4444ff', label: 'Account Node' },
+      { type: 'circle', x: 150, y: 250, radius: 50, fill: '#ff4444', label: 'Fraudulent Account' },
+      { type: 'circle', x: 450, y: 250, radius: 50, fill: '#44aa44', label: 'IP Address' },
+      { type: 'circle', x: 300, y: 250, radius: 50, fill: '#8844ff', label: 'GraphRAG Pattern' },
+      { type: 'arrow', start: { x: 300, y: 150 }, end: { x: 190, y: 250 }, label: 'Related To' },
+      { type: 'arrow', start: { x: 300, y: 150 }, end: { x: 410, y: 250 }, label: 'Connects From' },
+      { type: 'arrow', start: { x: 300, y: 150 }, end: { x: 300, y: 200 }, label: 'Matches' }
     ]
   }
 ];
@@ -124,12 +124,15 @@ const AnimatedDiagram: React.FC<{ diagram: Diagram }> = ({ diagram }) => {
                   textAnchor="middle"
                   fill="white"
                   dy=".3em"
+                  fontSize="14"
                 >
                   {element.label}
                 </text>
               </motion.g>
             );
           } else if (element.type === 'circle') {
+            const words = element.label.split(' ');
+            const lineHeight = 16;
             return (
               <motion.g
                 key={index}
@@ -143,15 +146,31 @@ const AnimatedDiagram: React.FC<{ diagram: Diagram }> = ({ diagram }) => {
                   r={element.radius}
                   fill={element.fill}
                 />
-                <text
-                  x={element.x}
-                  y={element.y}
-                  textAnchor="middle"
-                  fill="white"
-                  dy=".3em"
-                >
-                  {element.label}
-                </text>
+                {words.length === 1 ? (
+                  <text
+                    x={element.x}
+                    y={element.y}
+                    textAnchor="middle"
+                    fill="white"
+                    dy=".3em"
+                    fontSize="14"
+                  >
+                    {element.label}
+                  </text>
+                ) : (
+                  words.map((word, i) => (
+                    <text
+                      key={i}
+                      x={element.x}
+                      y={element.y + (i - (words.length - 1) / 2) * lineHeight}
+                      textAnchor="middle"
+                      fill="white"
+                      fontSize="14"
+                    >
+                      {word}
+                    </text>
+                  ))
+                )}
               </motion.g>
             );
           } else if (element.type === 'arrow') {
