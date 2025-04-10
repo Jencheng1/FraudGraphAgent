@@ -23,7 +23,7 @@ export const ApiService = {
         id: Date.now().toString(),
         text: 'Sorry, there was an error connecting to the server. Please try again later.',
         sender: 'bot',
-        timestamp: new Date()
+        timestamp: new Date().toISOString()
       };
     }
   },

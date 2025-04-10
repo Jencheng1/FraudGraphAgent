@@ -32,6 +32,8 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({ query }) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [graphData, setGraphData] = useState<{ nodes: NodeObject[]; links: LinkObject[] } | null>(null);
+  const [filteredData, setFilteredData] = useState<{ nodes: NodeObject[]; links: LinkObject[] } | null>(null);
+  const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set());
 
   const getNodeColor = (node: NodeObject): string => {
     switch (node.type) {
@@ -54,6 +56,44 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({ query }) => {
         return '#cccccc';
     }
   };
+
+  const handleFilterClick = (filter: string) => {
+    setActiveFilters(prev => {
+      const newFilters = new Set(prev);
+      if (newFilters.has(filter)) {
+        newFilters.delete(filter);
+      } else {
+        newFilters.add(filter);
+      }
+      return newFilters;
+    });
+  };
+
+  useEffect(() => {
+    if (!graphData) return;
+
+    if (activeFilters.size === 0) {
+      setFilteredData(graphData);
+      return;
+    }
+
+    const filteredNodes = graphData.nodes.filter(node => {
+      if (activeFilters.has('Account') && node.type === 'account' && !node.properties.isFraudulent) return true;
+      if (activeFilters.has('Fraudulent Account') && node.type === 'account' && node.properties.isFraudulent) return true;
+      if (activeFilters.has('IP Address') && node.type === 'ip' && !node.properties.isSuspicious) return true;
+      if (activeFilters.has('Suspicious IP') && node.type === 'ip' && node.properties.isSuspicious) return true;
+      return false;
+    });
+
+    const filteredNodeIds = new Set(filteredNodes.map(node => node.id));
+    const filteredLinks = graphData.links.filter(link => {
+      const sourceId = typeof link.source === 'string' ? link.source : link.source.id;
+      const targetId = typeof link.target === 'string' ? link.target : link.target.id;
+      return filteredNodeIds.has(sourceId) && filteredNodeIds.has(targetId);
+    });
+
+    setFilteredData({ nodes: filteredNodes, links: filteredLinks });
+  }, [graphData, activeFilters]);
 
   useEffect(() => {
     const fetchGraphData = async () => {
@@ -97,7 +137,7 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({ query }) => {
   }, [query]);
 
   useEffect(() => {
-    if (!graphData || !svgRef.current) return;
+    if (!filteredData || !svgRef.current) return;
 
     // Clear previous graph
     d3.select(svgRef.current).selectAll('*').remove();
@@ -107,8 +147,8 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({ query }) => {
     const height = svgRef.current.clientHeight;
 
     // Create force simulation
-    const simulation = d3.forceSimulation<NodeObject>(graphData.nodes)
-      .force('link', d3.forceLink<NodeObject, LinkObject>(graphData.links)
+    const simulation = d3.forceSimulation<NodeObject>(filteredData.nodes)
+      .force('link', d3.forceLink<NodeObject, LinkObject>(filteredData.links)
         .id((d: NodeObject) => d.id)
         .distance(100))
       .force('charge', d3.forceManyBody().strength(-300))
@@ -132,7 +172,7 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({ query }) => {
     // Create links
     const links = svg.append('g')
       .selectAll<SVGLineElement, LinkObject>('line')
-      .data(graphData.links)
+      .data(filteredData.links)
       .join('line')
       .attr('stroke', getLinkColor)
       .attr('stroke-width', 1.5)
@@ -141,7 +181,7 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({ query }) => {
     // Create nodes
     const nodes = svg.append('g')
       .selectAll<SVGCircleElement, NodeObject>('circle')
-      .data(graphData.nodes)
+      .data(filteredData.nodes)
       .join('circle')
       .attr('r', 6)
       .attr('fill', getNodeColor)
@@ -150,7 +190,7 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({ query }) => {
     // Add labels
     const labels = svg.append('g')
       .selectAll<SVGTextElement, NodeObject>('text')
-      .data(graphData.nodes)
+      .data(filteredData.nodes)
       .join('text')
       .text((d: NodeObject) => `${d.label} (${d.type})`)
       .attr('font-size', '12px')
@@ -203,17 +243,52 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({ query }) => {
     return () => {
       simulation.stop();
     };
-  }, [graphData]);
+  }, [filteredData]);
 
   return (
     <Paper elevation={3} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Box sx={{ p: 2, borderBottom: '1px solid #e0e0e0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h6">Fraud Graph Visualization</Typography>
         <Box>
-          <Chip label="Account" sx={{ bgcolor: '#4444ff', color: 'white', mr: 1 }} />
-          <Chip label="Fraudulent Account" sx={{ bgcolor: '#ff4444', color: 'white', mr: 1 }} />
-          <Chip label="IP Address" sx={{ bgcolor: '#44aa44', color: 'white', mr: 1 }} />
-          <Chip label="Suspicious IP" sx={{ bgcolor: '#ff8800', color: 'white' }} />
+          <Chip 
+            label="Account" 
+            sx={{ 
+              bgcolor: activeFilters.has('Account') ? '#4444ff' : 'grey.300',
+              color: activeFilters.has('Account') ? 'white' : 'text.primary',
+              mr: 1,
+              cursor: 'pointer'
+            }}
+            onClick={() => handleFilterClick('Account')}
+          />
+          <Chip 
+            label="Fraudulent Account" 
+            sx={{ 
+              bgcolor: activeFilters.has('Fraudulent Account') ? '#ff4444' : 'grey.300',
+              color: activeFilters.has('Fraudulent Account') ? 'white' : 'text.primary',
+              mr: 1,
+              cursor: 'pointer'
+            }}
+            onClick={() => handleFilterClick('Fraudulent Account')}
+          />
+          <Chip 
+            label="IP Address" 
+            sx={{ 
+              bgcolor: activeFilters.has('IP Address') ? '#44aa44' : 'grey.300',
+              color: activeFilters.has('IP Address') ? 'white' : 'text.primary',
+              mr: 1,
+              cursor: 'pointer'
+            }}
+            onClick={() => handleFilterClick('IP Address')}
+          />
+          <Chip 
+            label="Suspicious IP" 
+            sx={{ 
+              bgcolor: activeFilters.has('Suspicious IP') ? '#ff8800' : 'grey.300',
+              color: activeFilters.has('Suspicious IP') ? 'white' : 'text.primary',
+              cursor: 'pointer'
+            }}
+            onClick={() => handleFilterClick('Suspicious IP')}
+          />
         </Box>
       </Box>
       
@@ -248,7 +323,7 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({ query }) => {
           </Box>
         )}
         
-        {graphData && !loading && !error && (
+        {filteredData && !loading && !error && (
           <svg
             ref={svgRef}
             style={{ width: '100%', height: '100%' }}

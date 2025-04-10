@@ -14,7 +14,7 @@ const Chat: React.FC<ChatProps> = ({ onQuerySubmit }) => {
       id: '0',
       text: 'Hello! I\'m your fraud analysis assistant. Ask me to find accounts with the same IP or analyze fraud patterns.',
       sender: 'bot',
-      timestamp: new Date()
+      timestamp: new Date().toISOString()
     }
   ]);
   const [input, setInput] = useState('');
@@ -28,7 +28,7 @@ const Chat: React.FC<ChatProps> = ({ onQuerySubmit }) => {
       id: Date.now().toString(),
       text: input,
       sender: 'user',
-      timestamp: new Date()
+      timestamp: new Date().toISOString()
     };
     
     setMessages(prev => [...prev, userMessage]);
@@ -50,7 +50,7 @@ const Chat: React.FC<ChatProps> = ({ onQuerySubmit }) => {
         id: Date.now().toString(),
         text: 'Sorry, there was an error processing your request.',
         sender: 'bot',
-        timestamp: new Date()
+        timestamp: new Date().toISOString()
       }]);
     } finally {
       setIsLoading(false);
@@ -104,7 +104,7 @@ const Chat: React.FC<ChatProps> = ({ onQuerySubmit }) => {
               >
                 <Typography variant="body1">{message.text}</Typography>
                 <Typography variant="caption" sx={{ display: 'block', mt: 0.5, opacity: 0.7 }}>
-                  {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </Typography>
               </Paper>
               {message.sender === 'user' && (
