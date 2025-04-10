@@ -1,17 +1,59 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Box, Paper, Typography, CircularProgress, Chip } from '@mui/material';
-import ForceGraph2D from 'react-force-graph-2d';
-import { GraphData } from '../types';
+import * as d3 from 'd3';
 import { ApiService } from '../services/ApiService';
+
+interface NodeObject {
+  id: string;
+  label: string;
+  type: string;
+  properties: {
+    isFraudulent?: boolean;
+    isSuspicious?: boolean;
+  };
+  x?: number;
+  y?: number;
+  fx?: number | null;
+  fy?: number | null;
+}
+
+interface LinkObject {
+  source: string | NodeObject;
+  target: string | NodeObject;
+  type: string;
+}
 
 interface GraphVisualizationProps {
   query?: string;
 }
 
 const GraphVisualization: React.FC<GraphVisualizationProps> = ({ query }) => {
-  const [graphData, setGraphData] = useState<GraphData | null>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [graphData, setGraphData] = useState<{ nodes: NodeObject[]; links: LinkObject[] } | null>(null);
+
+  const getNodeColor = (node: NodeObject): string => {
+    switch (node.type) {
+      case 'account':
+        return node.properties.isFraudulent ? '#ff4444' : '#4444ff';
+      case 'ip':
+        return node.properties.isSuspicious ? '#ff8800' : '#44aa44';
+      default:
+        return '#aaaaaa';
+    }
+  };
+
+  const getLinkColor = (link: LinkObject): string => {
+    switch (link.type) {
+      case 'CONNECTS_FROM':
+        return '#888888';
+      case 'RELATED_TO':
+        return '#ff0000';
+      default:
+        return '#cccccc';
+    }
+  };
 
   useEffect(() => {
     const fetchGraphData = async () => {
@@ -40,7 +82,6 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({ query }) => {
       const executeQuery = async () => {
         try {
           await ApiService.executeQuery(query);
-          // Refresh graph data after query
           const data = await ApiService.getGraphData();
           setGraphData(data);
         } catch (err) {
@@ -55,27 +96,114 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({ query }) => {
     }
   }, [query]);
 
-  const getNodeColor = (node: any) => {
-    switch (node.type) {
-      case 'account':
-        return node.properties.isFraudulent ? '#ff4444' : '#4444ff';
-      case 'ip':
-        return node.properties.isSuspicious ? '#ff8800' : '#44aa44';
-      default:
-        return '#aaaaaa';
-    }
-  };
+  useEffect(() => {
+    if (!graphData || !svgRef.current) return;
 
-  const getLinkColor = (link: any) => {
-    switch (link.type) {
-      case 'CONNECTS_FROM':
-        return '#888888';
-      case 'RELATED_TO':
-        return '#ff0000';
-      default:
-        return '#cccccc';
+    // Clear previous graph
+    d3.select(svgRef.current).selectAll('*').remove();
+
+    const svg = d3.select<SVGSVGElement, unknown>(svgRef.current);
+    const width = svgRef.current.clientWidth;
+    const height = svgRef.current.clientHeight;
+
+    // Create force simulation
+    const simulation = d3.forceSimulation<NodeObject>(graphData.nodes)
+      .force('link', d3.forceLink<NodeObject, LinkObject>(graphData.links)
+        .id((d: NodeObject) => d.id)
+        .distance(100))
+      .force('charge', d3.forceManyBody().strength(-300))
+      .force('center', d3.forceCenter(width / 2, height / 2));
+
+    // Create arrow marker for directed edges
+    svg.append('defs').selectAll('marker')
+      .data(['end'])
+      .join('marker')
+      .attr('id', 'arrow')
+      .attr('viewBox', '0 -5 10 10')
+      .attr('refX', 15)
+      .attr('refY', 0)
+      .attr('markerWidth', 6)
+      .attr('markerHeight', 6)
+      .attr('orient', 'auto')
+      .append('path')
+      .attr('d', 'M0,-5L10,0L0,5')
+      .attr('fill', '#999');
+
+    // Create links
+    const links = svg.append('g')
+      .selectAll<SVGLineElement, LinkObject>('line')
+      .data(graphData.links)
+      .join('line')
+      .attr('stroke', getLinkColor)
+      .attr('stroke-width', 1.5)
+      .attr('marker-end', 'url(#arrow)');
+
+    // Create nodes
+    const nodes = svg.append('g')
+      .selectAll<SVGCircleElement, NodeObject>('circle')
+      .data(graphData.nodes)
+      .join('circle')
+      .attr('r', 6)
+      .attr('fill', getNodeColor)
+      .call((selection) => drag(simulation)(selection as d3.Selection<SVGCircleElement, NodeObject, any, any>));
+
+    // Add labels
+    const labels = svg.append('g')
+      .selectAll<SVGTextElement, NodeObject>('text')
+      .data(graphData.nodes)
+      .join('text')
+      .text((d: NodeObject) => `${d.label} (${d.type})`)
+      .attr('font-size', '12px')
+      .attr('dx', 8)
+      .attr('dy', 4);
+
+    // Update positions on simulation tick
+    simulation.on('tick', () => {
+      links
+        .attr('x1', (d: LinkObject) => (d.source as NodeObject).x!)
+        .attr('y1', (d: LinkObject) => (d.source as NodeObject).y!)
+        .attr('x2', (d: LinkObject) => (d.target as NodeObject).x!)
+        .attr('y2', (d: LinkObject) => (d.target as NodeObject).y!);
+
+      nodes
+        .attr('cx', (d: NodeObject) => d.x!)
+        .attr('cy', (d: NodeObject) => d.y!);
+
+      labels
+        .attr('x', (d: NodeObject) => d.x!)
+        .attr('y', (d: NodeObject) => d.y!);
+    });
+
+    // Drag behavior
+    function drag(simulation: d3.Simulation<NodeObject, undefined>) {
+      function dragstarted(event: d3.D3DragEvent<SVGCircleElement, NodeObject, NodeObject>) {
+        if (!event.active) simulation.alphaTarget(0.3).restart();
+        event.subject.fx = event.subject.x;
+        event.subject.fy = event.subject.y;
+      }
+
+      function dragged(event: d3.D3DragEvent<SVGCircleElement, NodeObject, NodeObject>) {
+        event.subject.fx = event.x;
+        event.subject.fy = event.y;
+      }
+
+      function dragended(event: d3.D3DragEvent<SVGCircleElement, NodeObject, NodeObject>) {
+        if (!event.active) simulation.alphaTarget(0);
+        event.subject.fx = null;
+        event.subject.fy = null;
+      }
+
+      return d3.drag<SVGCircleElement, NodeObject>()
+        .on('start', dragstarted)
+        .on('drag', dragged)
+        .on('end', dragended);
     }
-  };
+
+    // Cleanup
+    return () => {
+      simulation.stop();
+    };
+  }, [graphData]);
 
   return (
     <Paper elevation={3} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -89,7 +217,7 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({ query }) => {
         </Box>
       </Box>
       
-      <Box sx={{ flexGrow: 1, position: 'relative' }}>
+      <Box sx={{ flexGrow: 1, position: 'relative', minHeight: '500px' }}>
         {loading && (
           <Box sx={{ 
             position: 'absolute', 
@@ -121,22 +249,9 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({ query }) => {
         )}
         
         {graphData && !loading && !error && (
-          <ForceGraph2D
-            graphData={graphData}
-            nodeLabel={(node: any) => `${node.label} (${node.type})`}
-            nodeColor={getNodeColor}
-            linkColor={getLinkColor}
-            linkDirectionalArrowLength={3.5}
-            linkDirectionalArrowRelPos={1}
-            linkCurvature={0.25}
-            nodeRelSize={6}
-            linkWidth={1.5}
-            linkLabel={(link: any) => link.type}
-            cooldownTicks={100}
-            onNodeClick={(node: any) => {
-              console.log('Node clicked:', node);
-              // Could show a modal with node details here
-            }}
+          <svg
+            ref={svgRef}
+            style={{ width: '100%', height: '100%' }}
           />
         )}
       </Box>
